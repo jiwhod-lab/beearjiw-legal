@@ -1,51 +1,66 @@
 <!DOCTYPE html>
-  <html lang="th">
-  <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TikTok OAuth Callback - beearjiw</title>
-  <style>
-    body { font-family: -apple-system, "Segoe UI", "Sarabun", Tahoma, sans-serif; max-width: 640px; margin: 60px auto; padding: 0 20px; line-height: 1.7; color: #222; text-align: center; }
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TikTok OAuth Callback - beearjiw</title>
+<style>
+  body { font-family: -apple-system, "Segoe UI", "Sarabun", Tahoma, sans-serif; max-width: 640px; margin: 60px auto; padding: 0 20px; line-height: 1.7; color: #222; text-align: center; }
   h1 { font-size: 1.3em; }
   #code-box { background: #f3f3f3; border: 1px solid #ddd; border-radius: 8px; padding: 16px; word-break: break-all; font-family: monospace; font-size: 1.05em; margin: 20px 0; user-select: all; }
   #copy-btn { background: #fe2c55; color: white; border: none; border-radius: 6px; padding: 10px 20px; font-size: 1em; cursor: pointer; }
   #copy-btn:active { opacity: 0.8; }
   .muted { color: #777; font-size: 0.9em; }
   .error { color: #c00; }
-  </style>
-    </head>
-    <body>
-    <h1>เชื่อมต่อ TikTok สำเร็จ</h1>
-    <p>คัดลอกโค้ดด้านล่างแล้วนำไปวางในหน้าต่างคำสั่ง (terminal) ที่รอรับอยู่</p>
-    <div id="code-box">กำลังอ่านโค้ด...</div>
-    <button id="copy-btn" onclick="copyCode()">คัดลอกโค้ด</button>
-    <p class="muted" id="status"></p>
-    <script>
-      const params = new URLSearchParams(window.location.search);
+</style>
+</head>
+<body>
+<h1>เชื่อมต่อ TikTok สำเร็จ</h1>
+<p>ระบบจะส่งโค้ดกลับไปที่โปรแกรมให้อัตโนมัติ... ถ้าหน้านี้ค้างเกิน 5 วินาที (โปรแกรมยังไม่ได้เปิดรอ) ให้คัดลอกโค้ดด้านล่างไปวางในหน้าต่างคำสั่ง (terminal) เอง</p>
+<div id="code-box">กำลังอ่านโค้ด...</div>
+<button id="copy-btn" onclick="copyCode()">คัดลอกโค้ด</button>
+<p class="muted" id="status"></p>
+<script>
+  const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
+  const state = params.get('state');
   const error = params.get('error');
   const errorDesc = params.get('error_description');
   const box = document.getElementById('code-box');
   const status = document.getElementById('status');
+  const LOCAL_PORT = 17872;
+  function forwardTo(fwdParams) {
+    setTimeout(() => {
+      window.location.href = `http://127.0.0.1:${LOCAL_PORT}/?` + fwdParams.toString();
+    }, 150);
+  }
   if (code) {
     box.textContent = code;
+    status.textContent = 'กำลังส่งโค้ดกลับไปที่โปรแกรมอัตโนมัติ...';
+    const fwd = new URLSearchParams();
+    fwd.set('code', code);
+    if (state) fwd.set('state', state);
+    forwardTo(fwd);
   } else if (error) {
     box.textContent = error + (errorDesc ? ': ' + decodeURIComponent(errorDesc) : '');
-          box.classList.add('error');
+    box.classList.add('error');
     document.getElementById('copy-btn').style.display = 'none';
+    const fwd = new URLSearchParams();
+    fwd.set('error', error);
+    if (errorDesc) fwd.set('error_description', errorDesc);
+    forwardTo(fwd);
   } else {
     box.textContent = '(ไม่พบโค้ดใน URL)';
     box.classList.add('error');
     document.getElementById('copy-btn').style.display = 'none';
   }
   function copyCode() {
-        navigator.clipboard.writeText(box.textContent).then(() => {
+    navigator.clipboard.writeText(box.textContent).then(() => {
       status.textContent = 'คัดลอกแล้ว ✓';
-  }).catch(() => {
+    }).catch(() => {
       status.textContent = 'คัดลอกไม่สำเร็จ กรุณาเลือกข้อความแล้วคัดลอกเอง';
-  });
-         }
+    });
+  }
 </script>
-  </body>
-  </html>
-  
+</body>
+</html>
